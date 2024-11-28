@@ -1,64 +1,98 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 
+# Webdriver-Optionen festlegen
 options = webdriver.ChromeOptions()
-options.add_argument('--headless')  # Deaktiviere temporär bei Bedarf
+options.add_argument('--headless')
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-gpu')
 options.add_argument('--remote-debugging-port=9222')
 options.add_argument('--window-size=1920x1080')
 
-driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+# Verwende den Service-Wrapper mit ChromeDriverManager
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service, options=options)
 
 try:
+    # Öffne die Webseite
     print("Öffne die Webseite...")
     driver.get("https://www.ligaportal.at/ooe/2-klasse/2-klasse-sued/spieler-der-runde/109918-2-klasse-sued-waehle-den-beliebtesten-siberia-spieler-der-herbstsaison-2024")
 
+    # Warte auf den iFrame des Cookie-Banners und wechsle hinein (optional)
     print("Warte auf den iFrame des Cookie-Banners...")
-    WebDriverWait(driver, 10).until(
-        EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[src*='privacymanager.io']"))
-    )
+    try:
+        cookie_iframe = WebDriverWait(driver, 10).until(
+            EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[src*='privacymanager.io']"))
+        )
+        # Akzeptiere die Cookies
+        print("Akzeptiere die Cookies...")
+        accept_cookies_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.ID, "save"))
+        )
+        accept_cookies_button.click()
+        driver.switch_to.default_content()
+    except Exception as e:
+        print(f"Fehler beim Finden des iFrames oder des Cookies-Buttons: {e}")
+        driver.switch_to.default_content()
 
-    print("Akzeptiere die Cookies...")
-    WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, "save"))
-    ).click()
-    driver.switch_to.default_content()
+    # Warte ein paar Sekunden, um sicherzustellen, dass alles geladen ist
+    print("Warte auf das Laden der Seite...")
+    time.sleep(5)
 
-    print("Wechsel zum Voting-iFrame...")
-    WebDriverWait(driver, 20).until(
-        EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[src*='iframe-loader-mk2.html']"))
-    )
+    # Wechsel zum iframe, das das Voting-Formular enthält
+    print("Wechsel zum iframe mit dem Voting-Formular...")
+    try:
+        voting_iframe = WebDriverWait(driver, 20).until(
+            EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[src*='iframe-loader-mk2.html']"))
+        )
+    except Exception as e:
+        print(f"Fehler beim Finden des Voting-iFrames: {e}")
+        driver.quit()
+        exit()
 
-    print("Finde und klicke auf das Dropdown...")
-    collapse_button = WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, "//a[@data-target='#collapse-230']"))
-    )
-    collapse_button.click()
+    # Versuche das Dropdown-Element zu finden
+    print("Überprüfe, ob das Dropdown-Element vorhanden ist...")
+    try:
+        collapse_button = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, "//a[@data-target='#collapse-230']"))
+        )
+        print("Element gefunden, scrolle und klicke darauf...")
+        driver.execute_script("arguments[0].scrollIntoView(true);", collapse_button)
+        collapse_button.click()
+    except Exception as e:
+        print("Fehler beim Finden des Elements:", e)
+        driver.quit()
+        exit()
 
+    # Warte ein paar Sekunden, bis der Kollapsbereich geöffnet ist
     time.sleep(2)
 
-    print("Wähle den Radiobutton aus...")
-    driver.execute_script("document.querySelector('input[id=\"voteItem-400329\"]').checked = true;")
+    # Führe JavaScript aus, um den Radiobutton auszuwählen
+    print("Wähle den Radiobutton per JavaScript aus...")
+    script = """
+    document.querySelector('input[id="voteItem-400329"]').checked = true;
+    """
+    driver.execute_script(script)
 
+    # Warte ein paar Sekunden
     time.sleep(2)
 
-    print("Klicke auf den Abstimmen-Button...")
-    driver.execute_script("document.querySelector('input[id=\"playerOneUp\"]').click()")
+    # Finde und klicke auf den Abstimmen-Button mit JavaScript
+    print("Warte auf den Abstimmen-Button und klicke darauf...")
+    submit_button_script = """
+    document.querySelector('input[id="playerOneUp"]').click();
+    """
+    driver.execute_script(submit_button_script)
 
     print("Abstimmung erfolgreich abgeschlossen!")
 
-except Exception as e:
-    print(f"Ein Fehler ist aufgetreten: {e}")
-    driver.save_screenshot("debug_screenshot.png")
-    with open("debug.log", "w") as log_file:
-        log_file.write("Fehlerbeschreibung: " + str(e))
-
 finally:
+    # Schließe den Webdriver
     print("Schließe den Webdriver...")
     driver.quit()
