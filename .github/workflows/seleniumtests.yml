@@ -41,7 +41,7 @@ jobs:
 
     - name: Save artifacts for debugging
       if: failure()  # Läuft nur, wenn ein Fehler auftritt
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: selenium-debug
         path: |
