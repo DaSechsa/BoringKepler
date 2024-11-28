@@ -23,47 +23,59 @@ try:
     print("Öffne die Webseite...")
     driver.get("https://www.ligaportal.at/ooe/2-klasse/2-klasse-sued/spieler-der-runde/109918-2-klasse-sued-waehle-den-beliebtesten-siberia-spieler-der-herbstsaison-2024")
 
-    print("Warte auf den iFrame des Cookie-Banners...")
+    # Akzeptiere die Cookies
+    print("Klicke auf den Cookie-Banner...")
     try:
-        WebDriverWait(driver, 10).until(
-            EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[src*='privacymanager.io']"))
+        accept_cookies_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.ID, "didomi-notice-agree-button"))
         )
-        print("Akzeptiere die Cookies...")
-        WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, "save"))
-        ).click()
-        driver.switch_to.default_content()
+        accept_cookies_button.click()
     except Exception as e:
-        print(f"Cookie-Banner nicht gefunden: {e}")
-        driver.switch_to.default_content()
+        print(f"Cookie-Banner wurde nicht gefunden oder konnte nicht angeklickt werden: {e}")
 
-    print("Wechsel zum iframe mit dem Voting-Formular...")
-    WebDriverWait(driver, 20).until(
-        EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe[src*='iframe-loader-mk2.html']"))
+    # Warte, bis die Seite vollständig geladen ist
+    print("Warte auf das Laden der Seite...")
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "//div[@class='card-header border-0 border-bottom-1 p-0']"))
     )
 
-    print("Überprüfe das Dropdown-Element...")
-    collapse_button = WebDriverWait(driver, 20).until(
-        EC.presence_of_element_located((By.XPATH, "//a[@data-target='#collapse-230']"))
-    )
-    driver.execute_script("arguments[0].scrollIntoView(true);", collapse_button)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//a[@data-target='#collapse-230']"))).click()
+    # Klicke auf das Dropdown-Menü
+    print("Öffne das Dropdown-Menü...")
+    try:
+        dropdown_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//a[@data-target='#collapse-230']"))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", dropdown_button)
+        dropdown_button.click()
+    except Exception as e:
+        print(f"Fehler beim Öffnen des Dropdowns: {e}")
+        driver.quit()
+        exit()
 
-    time.sleep(2)
-
+    # Warte darauf, dass das Radiobutton sichtbar wird und wähle es aus
     print("Wähle den Radiobutton aus...")
-    driver.execute_script("document.querySelector('input[id=\"voteItem-400329\"]').checked = true;")
+    try:
+        radiobutton = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "voteItem-400329"))
+        )
+        driver.execute_script("arguments[0].click();", radiobutton)
+    except Exception as e:
+        print(f"Fehler beim Auswählen des Radiobuttons: {e}")
+        driver.quit()
+        exit()
 
-    time.sleep(2)
-
+    # Klicke auf den Abstimmen-Button
     print("Klicke auf den Abstimmen-Button...")
-    driver.execute_script("document.querySelector('input[id=\"playerOneUp\"]').click()")
+    try:
+        submit_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.ID, "playerOneUp"))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", submit_button)
+        submit_button.click()
+        print("Abstimmung erfolgreich abgeschlossen!")
+    except Exception as e:
+        print(f"Fehler beim Klicken auf den Abstimmen-Button: {e}")
 
-    print("Abstimmung erfolgreich abgeschlossen!")
-
-except Exception as e:
-    print(f"Ein Fehler ist aufgetreten: {e}")
-    driver.save_screenshot("debug_screenshot.png")  # Screenshot für Debugging
 finally:
     print("Schließe den Webdriver...")
     driver.quit()
