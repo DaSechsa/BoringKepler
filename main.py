@@ -22,8 +22,6 @@ driver = webdriver.Chrome(service=service, options=options)
 try:
     print("Öffne die Webseite...")
     driver.get("https://www.ligaportal.at/ooe/2-klasse/2-klasse-sued/spieler-der-runde/109918-2-klasse-sued-waehle-den-beliebtesten-siberia-spieler-der-herbstsaison-2024")
-
-    # Screenshot nach dem Laden der Seite
     driver.save_screenshot("page_loaded.png")
 
     # Akzeptiere die Cookies
@@ -35,18 +33,23 @@ try:
         accept_cookies_button.click()
         print("Cookie-Banner erfolgreich geklickt.")
     except Exception as e:
-        print(f"Cookie-Banner wurde nicht gefunden oder konnte nicht angeklickt werden: {e}")
         driver.save_screenshot("cookie_error.png")
+        print(f"Fehler beim Cookie-Banner: {e}")
 
     # Warte, bis die Seite vollständig geladen ist
     print("Warte auf das Laden der Seite...")
-    WebDriverWait(driver, 20).until(
-        EC.presence_of_element_located((By.XPATH, "//div[@class='card-header border-0 border-bottom-1 p-0']"))
-    )
-    print("Seite erfolgreich geladen.")
-
-    # Screenshot nach dem Laden des Dropdowns
-    driver.save_screenshot("dropdown_ready.png")
+    try:
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, "//div[@class='card-header border-0 border-bottom-1 p-0']"))
+        )
+        print("Seite erfolgreich geladen.")
+    except Exception as e:
+        driver.save_screenshot("element_load_error.png")
+        print(f"Fehler beim Warten auf das Element: {e}")
+        with open("page_source.html", "w", encoding="utf-8") as f:
+            f.write(driver.page_source)
+        driver.quit()
+        exit()
 
     # Klicke auf das Dropdown-Menü
     print("Öffne das Dropdown-Menü...")
@@ -56,13 +59,14 @@ try:
         )
         driver.execute_script("arguments[0].scrollIntoView(true);", dropdown_button)
         dropdown_button.click()
+        print("Dropdown-Menü erfolgreich geöffnet.")
     except Exception as e:
-        print(f"Fehler beim Öffnen des Dropdowns: {e}")
         driver.save_screenshot("dropdown_error.png")
+        print(f"Fehler beim Öffnen des Dropdowns: {e}")
         driver.quit()
         exit()
 
-    # Warte darauf, dass das Radiobutton sichtbar wird und wähle es aus
+    # Wähle den Radiobutton aus
     print("Wähle den Radiobutton aus...")
     try:
         radiobutton = WebDriverWait(driver, 20).until(
@@ -71,8 +75,8 @@ try:
         driver.execute_script("arguments[0].click();", radiobutton)
         print("Radiobutton erfolgreich ausgewählt.")
     except Exception as e:
-        print(f"Fehler beim Auswählen des Radiobuttons: {e}")
         driver.save_screenshot("radiobutton_error.png")
+        print(f"Fehler beim Auswählen des Radiobuttons: {e}")
         driver.quit()
         exit()
 
@@ -86,8 +90,8 @@ try:
         submit_button.click()
         print("Abstimmung erfolgreich abgeschlossen!")
     except Exception as e:
-        print(f"Fehler beim Klicken auf den Abstimmen-Button: {e}")
         driver.save_screenshot("submit_button_error.png")
+        print(f"Fehler beim Klicken auf den Abstimmen-Button: {e}")
 
 finally:
     print("Schließe den Webdriver...")
