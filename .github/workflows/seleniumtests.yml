@@ -1,9 +1,6 @@
 name: Selenium Tests
 
 on:
-  schedule:
-    # Läuft alle 30 Minuten
-    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -11,42 +8,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Repository klonen
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    # Python einrichten
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    # Abhängigkeiten für Chrome und Xvfb installieren
-    - name: Install Chrome dependencies
+    - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y wget unzip libnss3 libxss1 libappindicator1 \
             libindicator7 fonts-liberation libatk1.0-0 libgtk-3-0 libgbm-dev xvfb
-
-    # Python-Abhängigkeiten installieren
-    - name: Install Python dependencies
-      run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install selenium webdriver-manager
 
-    # Xvfb starten und Selenium-Skript ausführen
-    - name: Start Xvfb and run Selenium script
+    - name: Run Selenium script
       run: |
         export DISPLAY=:99
         Xvfb :99 -screen 0 1920x1080x24 &
         python main.py
-      env:
-        PYTHONUNBUFFERED: 1  # Direktes Logging ohne Puffer
 
-    # Debugging-Screenshots hochladen, wenn ein Fehler auftritt
-    - name: Upload Debugging Screenshots
-      if: failure()  # Nur bei Fehlern ausführen
+    - name: Upload Debugging Files
+      if: failure()
       uses: actions/upload-artifact@v3
       with:
-        name: selenium-screenshots
-        path: "*.png"
+        name: debugging-files
+        path: |
+          *.html
+          *.png

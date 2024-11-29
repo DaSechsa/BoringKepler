@@ -5,7 +5,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import time
-import sys
 
 # Webdriver-Optionen festlegen
 options = webdriver.ChromeOptions()
@@ -58,60 +57,6 @@ try:
         print(f"Fehler beim Laden der Seite: {e}")
         save_debug_info("page_load_error")
         raise e  # Forciere den Fehlerstatus
-
-    # Wechsle in den iFrame
-    print("Wechsle in den iFrame...")
-    try:
-        iframe = WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.NAME, "teamVoting"))
-        )
-        driver.switch_to.frame(iframe)
-        print("Erfolgreich in den iFrame gewechselt.")
-    except Exception as e:
-        print(f"Fehler beim Wechsel in den iFrame: {e}")
-        save_debug_info("iframe_error")
-        raise e
-
-    # Überprüfe Dropdown-Element
-    print("Überprüfe Dropdown-Element...")
-    try:
-        dropdown = WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, '//*[@id="heading-230"]/h5/a'))
-        )
-        dropdown.click()
-        driver.save_screenshot("dropdown_clicked.png")
-        print("Dropdown erfolgreich geöffnet.")
-    except Exception as e:
-        print(f"Fehler beim Finden des Dropdowns: {e}")
-        save_debug_info("dropdown_error")
-        raise e
-
-    # Wähle den Radiobutton aus
-    print("Wähle den Radiobutton aus...")
-    try:
-        radiobutton = WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.XPATH, '//*[@id="voteItem-400329"]'))
-        )
-        radiobutton.click()
-        print("Radiobutton erfolgreich ausgewählt.")
-    except Exception as e:
-        print(f"Fehler beim Auswählen des Radiobuttons: {e}")
-        save_debug_info("radiobutton_error")
-        raise e
-
-    # Klicke auf den Abstimmen-Button
-    print("Klicke auf den Abstimmen-Button...")
-    try:
-        submit_button = WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.ID, "playerOneUp"))
-        )
-        submit_button.click()
-        driver.save_screenshot("vote_submitted.png")
-        print("Abstimmung erfolgreich abgeschlossen!")
-    except Exception as e:
-        print(f"Fehler beim Klicken auf den Abstimmen-Button: {e}")
-        save_debug_info("submit_button_error")
-        raise e
 
 finally:
     print("Schließe den Webdriver...")
