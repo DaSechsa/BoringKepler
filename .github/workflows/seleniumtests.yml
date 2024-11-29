@@ -22,4 +22,4 @@ jobs:
 
       - name: Run voting script
         run: |
-          python vote.py
+          python main.py
