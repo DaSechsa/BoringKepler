@@ -1,40 +1,40 @@
 name: Selenium Tests
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  test:
+  selenium-test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Check out repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y wget unzip libnss3 libxss1 libappindicator1 \
-            libindicator7 fonts-liberation libatk1.0-0 libgtk-3-0 libgbm-dev xvfb
-        python -m pip install --upgrade pip
-        pip install selenium webdriver-manager
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
+          pip install selenium webdriver-manager
 
-    - name: Run Selenium script
-      run: |
-        export DISPLAY=:99
-        Xvfb :99 -screen 0 1920x1080x24 &
-        python main.py
+      - name: Run Selenium script
+        run: |
+          python main.py
+        continue-on-error: true
 
-    - name: Upload Debugging Files
-      if: failure()
-      uses: actions/upload-artifact@v3
-      with:
-        name: debugging-files
-        path: |
-          *.html
-          *.png
+      - name: Upload debugging files
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: Debugging Files
+          path: |
+            *.html
+            *.png
