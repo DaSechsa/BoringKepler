@@ -8,7 +8,7 @@ import time
 
 # Webdriver-Optionen festlegen
 options = webdriver.ChromeOptions()
-# options.add_argument('--headless')  # Entferne für Debugging
+# options.add_argument('--headless')  # Deaktiviere für Debugging
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-gpu')
@@ -50,49 +50,33 @@ try:
         driver.quit()
         exit()
 
+    # Debug: Vollständige Seite speichern
+    with open("page_source_after_load.html", "w", encoding="utf-8") as f:
+        f.write(driver.page_source)
+
     # Überprüfe Dropdown-Element
     print("Überprüfe Dropdown-Element...")
     try:
+        # Scrolle zum Dropdown-Bereich
+        print("Scrolle zur Position des Dropdowns...")
+        dropdown_area = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.XPATH, "//*[@id='heading-230']"))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", dropdown_area)
+        print("Dropdown-Bereich sichtbar gemacht.")
+
+        # Finde und klicke auf das Dropdown
         dropdown_button = WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, "//*[@id='heading-230']/h5/a"))
         )
-        print("Dropdown-Element gefunden. Öffne das Dropdown...")
-        driver.execute_script("arguments[0].scrollIntoView(true);", dropdown_button)
         dropdown_button.click()
         driver.save_screenshot("dropdown_opened.png")
+        print("Dropdown erfolgreich geöffnet.")
     except Exception as e:
         driver.save_screenshot("dropdown_not_found.png")
         print(f"Dropdown-Element wurde nicht gefunden: {e}")
         driver.quit()
         exit()
-
-    # Wähle den Radiobutton aus
-    print("Wähle den Radiobutton aus...")
-    try:
-        radiobutton = WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.XPATH, "//*[@id='voteItem-400329']"))
-        )
-        driver.execute_script("arguments[0].click();", radiobutton)
-        print("Radiobutton erfolgreich ausgewählt.")
-    except Exception as e:
-        driver.save_screenshot("radiobutton_error.png")
-        print(f"Fehler beim Auswählen des Radiobuttons: {e}")
-        driver.quit()
-        exit()
-
-    # Klicke auf den Abstimmen-Button
-    print("Klicke auf den Abstimmen-Button...")
-    try:
-        submit_button = WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.ID, "playerOneUp"))
-        )
-        driver.execute_script("arguments[0].scrollIntoView(true);", submit_button)
-        submit_button.click()
-        print("Abstimmung erfolgreich abgeschlossen!")
-        driver.save_screenshot("vote_submitted.png")
-    except Exception as e:
-        driver.save_screenshot("submit_button_error.png")
-        print(f"Fehler beim Klicken auf den Abstimmen-Button: {e}")
 
 finally:
     print("Schließe den Webdriver...")
