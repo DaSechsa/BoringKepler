@@ -31,7 +31,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload debugging files
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: Debugging Files

@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import sys
 
 # Webdriver initialisieren
 options = webdriver.ChromeOptions()
@@ -25,7 +26,6 @@ def save_debug_info(filename_prefix="debug"):
         print(f"Fehler beim Speichern von Debugging-Daten: {e}")
 
 try:
-    # Richtige URL öffnen
     print("Öffne die Webseite...")
     driver.get("https://www.ligaportal.at/ooe/2-klasse/2-klasse-sued/spieler-der-runde/109918-2-klasse-sued-waehle-den-beliebtesten-siberia-spieler-der-herbstsaison-2024")
     time.sleep(3)  # Warte auf das Laden der Seite
@@ -54,11 +54,7 @@ try:
         save_debug_info("cookie_error")
         raise e
 
-    # Warten bis Seite vollständig geladen ist
-    print("Seite vollständig geladen.")
-
-    # Interaktion mit weiteren Elementen hinzufügen, falls benötigt...
-
 finally:
     print("Schließe den Webdriver...")
+    save_debug_info("final_state")  # Speichert immer den letzten Zustand
     driver.quit()
