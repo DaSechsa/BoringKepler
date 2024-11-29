@@ -1,43 +1,25 @@
-name: Selenium Tests
+name: Vote Automation
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *' # Alle 30 Minuten ausführen
 
 jobs:
-  selenium-test:
+  vote:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Google Chrome and Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip xvfb google-chrome-stable
-
-      - name: Install Python Dependencies
-        run: pip install selenium webdriver-manager
-
-      - name: Set Up XVFB
-        run: |
-          Xvfb :99 -screen 0 1920x1080x24 &
-        env:
-          DISPLAY: ":99"
-
-      - name: Run Selenium Test
-        run: python main.py
-        env:
-          DISPLAY: ":99"
-
-      - name: Upload Debugging Files
-        if: always()
-        uses: actions/upload-artifact@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          name: Debugging Files
-          path: |
-            *.png
-            *.html
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run voting script
+        run: |
+          python vote.py
