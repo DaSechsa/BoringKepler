@@ -9,7 +9,7 @@ import sys
 
 # Webdriver-Optionen festlegen
 options = webdriver.ChromeOptions()
-# options.add_argument('--headless')  # Deaktiviere für Debugging
+options.add_argument('--headless')  # Läuft in headless
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-gpu')
@@ -18,6 +18,16 @@ options.add_argument('--window-size=1920x1080')
 # Verwende den Service-Wrapper mit ChromeDriverManager
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
+
+def save_debug_info(filename_prefix="debug"):
+    """Speichert die HTML-Struktur und einen Screenshot für Debugging."""
+    try:
+        with open(f"{filename_prefix}_page_source.html", "w", encoding="utf-8") as f:
+            f.write(driver.page_source)
+        driver.save_screenshot(f"{filename_prefix}_screenshot.png")
+        print(f"Debugging-Daten gespeichert: {filename_prefix}_page_source.html und {filename_prefix}_screenshot.png")
+    except Exception as e:
+        print(f"Fehler beim Speichern von Debugging-Daten: {e}")
 
 try:
     print("Öffne die Webseite...")
@@ -33,8 +43,8 @@ try:
         accept_cookies_button.click()
         print("Cookie-Banner erfolgreich geklickt.")
     except Exception as e:
-        driver.save_screenshot("cookie_error.png")
         print(f"Fehler beim Cookie-Banner: {e}")
+        save_debug_info("cookie_error")
         raise e  # Forciere den Fehlerstatus
 
     # Warte auf das Laden der Seite
@@ -45,38 +55,63 @@ try:
         )
         print("Seite vollständig geladen.")
     except Exception as e:
-        driver.save_screenshot("page_load_error.png")
         print(f"Fehler beim Laden der Seite: {e}")
-        with open("page_source.html", "w", encoding="utf-8") as f:
-            f.write(driver.page_source)
+        save_debug_info("page_load_error")
         raise e  # Forciere den Fehlerstatus
 
-    # Debug: Vollständige Seite speichern
-    with open("page_source_after_load.html", "w", encoding="utf-8") as f:
-        f.write(driver.page_source)
+    # Wechsle in den iFrame
+    print("Wechsle in den iFrame...")
+    try:
+        iframe = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.NAME, "teamVoting"))
+        )
+        driver.switch_to.frame(iframe)
+        print("Erfolgreich in den iFrame gewechselt.")
+    except Exception as e:
+        print(f"Fehler beim Wechsel in den iFrame: {e}")
+        save_debug_info("iframe_error")
+        raise e
 
     # Überprüfe Dropdown-Element
     print("Überprüfe Dropdown-Element...")
     try:
-        # Scrolle zur Position des Dropdowns
-        print("Scrolle zur Position des Dropdowns...")
-        dropdown_area = WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.XPATH, "//*[@id='heading-230']"))
+        dropdown = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="heading-230"]/h5/a'))
         )
-        driver.execute_script("arguments[0].scrollIntoView(true);", dropdown_area)
-        print("Dropdown-Bereich sichtbar gemacht.")
-
-        # Finde und klicke auf das Dropdown
-        dropdown_button = WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, "//*[@id='heading-230']/h5/a"))
-        )
-        dropdown_button.click()
-        driver.save_screenshot("dropdown_opened.png")
+        dropdown.click()
+        driver.save_screenshot("dropdown_clicked.png")
         print("Dropdown erfolgreich geöffnet.")
     except Exception as e:
-        driver.save_screenshot("dropdown_not_found.png")
-        print(f"Dropdown-Element wurde nicht gefunden: {e}")
-        raise e  # Forciere den Fehlerstatus
+        print(f"Fehler beim Finden des Dropdowns: {e}")
+        save_debug_info("dropdown_error")
+        raise e
+
+    # Wähle den Radiobutton aus
+    print("Wähle den Radiobutton aus...")
+    try:
+        radiobutton = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="voteItem-400329"]'))
+        )
+        radiobutton.click()
+        print("Radiobutton erfolgreich ausgewählt.")
+    except Exception as e:
+        print(f"Fehler beim Auswählen des Radiobuttons: {e}")
+        save_debug_info("radiobutton_error")
+        raise e
+
+    # Klicke auf den Abstimmen-Button
+    print("Klicke auf den Abstimmen-Button...")
+    try:
+        submit_button = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.ID, "playerOneUp"))
+        )
+        submit_button.click()
+        driver.save_screenshot("vote_submitted.png")
+        print("Abstimmung erfolgreich abgeschlossen!")
+    except Exception as e:
+        print(f"Fehler beim Klicken auf den Abstimmen-Button: {e}")
+        save_debug_info("submit_button_error")
+        raise e
 
 finally:
     print("Schließe den Webdriver...")
