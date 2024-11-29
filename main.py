@@ -5,25 +5,25 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 
-def switch_to_iframe(driver, iframe_identifier=None):
-    """Switch to iframe if found, with better error handling."""
+def locate_and_switch_to_iframe(driver):
+    """Locate an iframe dynamically and switch to it."""
     try:
-        if iframe_identifier:
-            iframe = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.NAME, iframe_identifier))
-            )
-        else:
-            iframe = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.TAG_NAME, "iframe"))
-            )
-        driver.switch_to.frame(iframe)
-        print(f"Switched to iframe: {iframe.get_attribute('name') or 'unnamed'}")
-        return True
-    except TimeoutException:
-        print("No iframe found. Continuing in the main context.")
+        iframes = driver.find_elements(By.TAG_NAME, "iframe")
+        print(f"Found {len(iframes)} iframe(s) on the page.")
+        for iframe in iframes:
+            print(f"Checking iframe with attributes: name={iframe.get_attribute('name')}, id={iframe.get_attribute('id')}")
+            # Attempt to switch to iframe
+            driver.switch_to.frame(iframe)
+            print(f"Switched to iframe with name={iframe.get_attribute('name')} or id={iframe.get_attribute('id')}.")
+            # Check if iframe contains the desired content
+            if "teamVoting" in driver.page_source:  # Example check for unique content
+                print("Correct iframe identified and switched.")
+                return True
+            driver.switch_to.default_content()  # Return to main content if it's not the correct iframe
+        print("No matching iframe found.")
         return False
     except Exception as e:
-        print(f"Error while switching to iframe: {e}")
+        print(f"Error while locating or switching to iframe: {e}")
         return False
 
 
@@ -86,14 +86,13 @@ try:
     # Handle Cookie Banner in Main Context
     handle_cookie_banner(driver)
     
-    # Attempt to switch to iframe and vote
-    if switch_to_iframe(driver, "teamVoting"):  # Try to switch to iframe context
+    # Attempt to locate and switch to the correct iframe
+    if locate_and_switch_to_iframe(driver):
         vote_for_player(driver, "Alisic Adin")
-        # Return to the main context
-        driver.switch_to.default_content()
-        print("Switched back to main context.")
+        driver.switch_to.default_content()  # Switch back to the main context
+        print("Switched back to main content.")
     else:
-        print("Could not switch to iframe. Check if it exists or has a different identifier.")
+        print("Could not locate the iframe or the iframe does not contain the desired content.")
 
 finally:
     driver.quit()
