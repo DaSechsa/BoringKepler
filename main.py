@@ -8,7 +8,7 @@ import time
 
 # Webdriver-Optionen festlegen
 options = webdriver.ChromeOptions()
-# options.add_argument('--headless')  # Deaktiviere für Debugging
+# options.add_argument('--headless')  # Entferne für Debugging
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-gpu')
@@ -50,13 +50,16 @@ try:
         driver.quit()
         exit()
 
-    # Überprüfe spezifisches Element
+    # Überprüfe Dropdown-Element
     print("Überprüfe Dropdown-Element...")
     try:
-        dropdown_element = WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'card-header') and contains(@class, 'p-0')]"))
+        dropdown_button = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, "//a[contains(@data-target, '#collapse-230')]"))
         )
-        print("Dropdown-Element gefunden.")
+        print("Dropdown-Element gefunden. Öffne das Dropdown...")
+        driver.execute_script("arguments[0].scrollIntoView(true);", dropdown_button)
+        dropdown_button.click()
+        driver.save_screenshot("dropdown_opened.png")
     except Exception as e:
         driver.save_screenshot("dropdown_not_found.png")
         print(f"Dropdown-Element wurde nicht gefunden: {e}")
