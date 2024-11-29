@@ -33,6 +33,17 @@ try:
     driver.get("https://www.ligaportal.at/ooe/2-klasse/2-klasse-sued/spieler-der-runde/109918-2-klasse-sued-waehle-den-beliebtesten-siberia-spieler-der-herbstsaison-2024")
     driver.save_screenshot("page_loaded.png")
 
+    # Schließe den Benachrichtigungsdialog, falls vorhanden
+    print("Prüfe, ob der Benachrichtigungsdialog vorhanden ist...")
+    try:
+        notification_close_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'NEIN DANKE')]"))
+        )
+        notification_close_button.click()
+        print("Benachrichtigungsdialog geschlossen.")
+    except Exception as e:
+        print("Benachrichtigungsdialog nicht gefunden oder konnte nicht geschlossen werden. Fahre fort...")
+
     # Akzeptiere die Cookies
     print("Klicke auf den Cookie-Banner...")
     try:
