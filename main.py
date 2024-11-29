@@ -4,15 +4,16 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
-def switch_to_iframe(driver, iframe_name=None):
-    """Switch to iframe if found."""
+
+def switch_to_iframe(driver, iframe_identifier=None):
+    """Switch to iframe if found, with better error handling."""
     try:
-        if iframe_name:
-            iframe = WebDriverWait(driver, 5).until(
-                EC.presence_of_element_located((By.NAME, iframe_name))
+        if iframe_identifier:
+            iframe = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.NAME, iframe_identifier))
             )
         else:
-            iframe = WebDriverWait(driver, 5).until(
+            iframe = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, "iframe"))
             )
         driver.switch_to.frame(iframe)
@@ -21,6 +22,10 @@ def switch_to_iframe(driver, iframe_name=None):
     except TimeoutException:
         print("No iframe found. Continuing in the main context.")
         return False
+    except Exception as e:
+        print(f"Error while switching to iframe: {e}")
+        return False
+
 
 def handle_notification_popup(driver):
     """Handle notification popup if it appears."""
@@ -32,6 +37,9 @@ def handle_notification_popup(driver):
         print("Notification popup handled.")
     except TimeoutException:
         print("Notification popup not found.")
+    except Exception as e:
+        print(f"Error handling notification popup: {e}")
+
 
 def handle_cookie_banner(driver):
     """Handle cookie banner if it appears."""
@@ -43,6 +51,9 @@ def handle_cookie_banner(driver):
         print("Cookie banner accepted.")
     except TimeoutException:
         print("Cookie banner not found.")
+    except Exception as e:
+        print(f"Error handling cookie banner: {e}")
+
 
 def vote_for_player(driver, player_name):
     """Locate the player and vote."""
@@ -58,6 +69,9 @@ def vote_for_player(driver, player_name):
         print(f"Timeout while locating player {player_name} or vote button.")
     except NoSuchElementException:
         print(f"Player {player_name} or vote button not found.")
+    except Exception as e:
+        print(f"Error while voting for {player_name}: {e}")
+
 
 # Main execution
 driver = webdriver.Chrome()
@@ -72,15 +86,14 @@ try:
     # Handle Cookie Banner in Main Context
     handle_cookie_banner(driver)
     
-    # Switch to Voting Iframe
-    if switch_to_iframe(driver, "teamVoting"):  # Use iframe name if known
-        # Attempt to vote for the player in the iframe context
+    # Attempt to switch to iframe and vote
+    if switch_to_iframe(driver, "teamVoting"):  # Try to switch to iframe context
         vote_for_player(driver, "Alisic Adin")
         # Return to the main context
         driver.switch_to.default_content()
         print("Switched back to main context.")
-    
-    # Handle any additional actions in the main context if needed
-    
+    else:
+        print("Could not switch to iframe. Check if it exists or has a different identifier.")
+
 finally:
     driver.quit()
