@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+import sys
 
 # Webdriver-Optionen festlegen
 options = webdriver.ChromeOptions()
@@ -34,6 +35,7 @@ try:
     except Exception as e:
         driver.save_screenshot("cookie_error.png")
         print(f"Fehler beim Cookie-Banner: {e}")
+        raise e  # Forciere den Fehlerstatus
 
     # Warte auf das Laden der Seite
     print("Warte auf das Laden der Seite...")
@@ -47,8 +49,7 @@ try:
         print(f"Fehler beim Laden der Seite: {e}")
         with open("page_source.html", "w", encoding="utf-8") as f:
             f.write(driver.page_source)
-        driver.quit()
-        exit()
+        raise e  # Forciere den Fehlerstatus
 
     # Debug: Vollständige Seite speichern
     with open("page_source_after_load.html", "w", encoding="utf-8") as f:
@@ -57,7 +58,7 @@ try:
     # Überprüfe Dropdown-Element
     print("Überprüfe Dropdown-Element...")
     try:
-        # Scrolle zum Dropdown-Bereich
+        # Scrolle zur Position des Dropdowns
         print("Scrolle zur Position des Dropdowns...")
         dropdown_area = WebDriverWait(driver, 20).until(
             EC.presence_of_element_located((By.XPATH, "//*[@id='heading-230']"))
@@ -75,8 +76,7 @@ try:
     except Exception as e:
         driver.save_screenshot("dropdown_not_found.png")
         print(f"Dropdown-Element wurde nicht gefunden: {e}")
-        driver.quit()
-        exit()
+        raise e  # Forciere den Fehlerstatus
 
 finally:
     print("Schließe den Webdriver...")

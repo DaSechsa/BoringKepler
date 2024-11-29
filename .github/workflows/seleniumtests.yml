@@ -45,7 +45,6 @@ jobs:
 
     # Debugging-Screenshots hochladen, wenn ein Fehler auftritt
     - name: Upload Debugging Screenshots
-      if: failure()  # Nur bei Fehlern ausführen
       uses: actions/upload-artifact@v3
       with:
         name: selenium-screenshots
