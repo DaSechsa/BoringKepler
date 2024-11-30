@@ -1,8 +1,9 @@
 name: Vote Automation
 
 on:
-  schedule:
-    - cron: '*/11 * * * *' # Alle 30 Minuten ausführen
+  push
+  #schedule:
+    #- cron: '*/11 * * * *' # Alle 30 Minuten ausführen
 
 jobs:
   vote:
