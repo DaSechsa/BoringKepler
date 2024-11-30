@@ -15,8 +15,8 @@ headers = {
 
 # Payload (Daten für die Abstimmung)
 payload = {
-    "voteItem": "400329",  # ID für "Adin Alisic"
-    "votingId": "1130",
+    "voteItem": "392174",  # ID für "Adin Alisic"
+    "votingId": "1107",
     "playerOneUp": "Abstimmen"
 }
 
