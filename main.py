@@ -7,7 +7,7 @@ url = "https://ticker.ligaportal.at/playerVoting/playerOneUp"
 # Headers (verwende den geladenen Cookie)
 headers = {
     "Content-Type": "application/x-www-form-urlencoded",
-    "Referer": "https://ticker.ligaportal.at/playerVoting/showVoting/1130?hideFooter=true&t=1732907285754",
+    "Referer": "https://ticker.ligaportal.at/playerVoting/showVoting/1107?hideFooter=true&t=1732907285754",
     "Origin": "https://ticker.ligaportal.at",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
     "Cookie": "cookie"
